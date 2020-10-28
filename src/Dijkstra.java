@@ -1,14 +1,55 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Dijkstra {
-    public static void findShortestPath (Node[][] grid, Node start, Node end, ArrayList<Node> visitedNodesInOrder) {
+    public static void findShortestPath(Node[][] grid, Node start, Node end, ArrayList<Node> visitedNodesInOrder, int delay) {
         start.setDistance(0);
         ArrayList<Node> unvisitedNodes = getAllNodes(grid);
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new SchedulerTimerTask(unvisitedNodes, visitedNodesInOrder, grid, end),
+                (long) delay, (long) delay);
+    }
 
-        while (unvisitedNodes.size() != 0) {
+    private static ArrayList<Node> getAllNodes(Node[][] grid) {
+        ArrayList<Node> nodes = new ArrayList<>();
+        for (Node[] node : grid) {
+            nodes.addAll(Arrays.asList(node));
+        }
+        return nodes;
+    }
+
+    public static ArrayList<Node> getNodesInShortestPathOrder(Node end) {
+        ArrayList<Node> nodesInShortestPathOrder = new ArrayList<>();
+        Node current = end;
+        while (current != null) {
+            nodesInShortestPathOrder.add(current);
+            current = current.getPrevNode();
+        }
+        return nodesInShortestPathOrder;
+    }
+}
+
+class SchedulerTimerTask extends TimerTask {
+    private ArrayList<Node> unvisitedNodes;
+    private ArrayList<Node> visitedNodesInOrder;
+    private Node[][] grid;
+    private Node end;
+
+    public SchedulerTimerTask(ArrayList<Node> unvisitedNodes, ArrayList<Node> visitedNodesInOrder, Node[][] grid, Node end) {
+        this.unvisitedNodes = unvisitedNodes;
+        this.visitedNodesInOrder = visitedNodesInOrder;
+        this.grid = grid;
+        this.end = end;
+    }
+
+    @Override
+    public void run() {
+        visitClosestNode();
+    }
+
+    private void visitClosestNode() {
+        if (unvisitedNodes.size() != 0) {
             Collections.sort(unvisitedNodes);
             Node closetNode = unvisitedNodes.get(0);
 
@@ -52,23 +93,5 @@ public class Dijkstra {
 
         return (ArrayList<Node>) neighbours.stream().filter(neighbour -> !neighbour.isVisited())
                 .collect(Collectors.toList());
-    }
-
-    private static ArrayList<Node> getAllNodes(Node[][] grid) {
-        ArrayList<Node> nodes = new ArrayList<>();
-        for (Node[] node : grid) {
-            nodes.addAll(Arrays.asList(node));
-        }
-        return nodes;
-    }
-
-    public static ArrayList<Node> getNodesInShortestPathOrder(Node end) {
-        ArrayList<Node> nodesInShortestPathOrder = new ArrayList<>();
-        Node current = end;
-        while (current != null) {
-            nodesInShortestPathOrder.add(current);
-            current = current.getPrevNode();
-        }
-        return nodesInShortestPathOrder;
     }
 }
